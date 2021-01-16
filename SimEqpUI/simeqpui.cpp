@@ -40,7 +40,7 @@ SimEqpUI::SimEqpUI(QWidget *parent)
 
 	//读取标准0号曲线数据
 	connect(this, &SimEqpUI::sig_ReadData, loadExcelThread, &ExcelThread::readData_Thread);
-	//绘制Excel导入的 位移或力 0号曲线
+	//绘制Excel导入的 位移，速度或力 0号曲线
 	connect(loadExcelThread, &ExcelThread::plotExcelData, this, &SimEqpUI::on_plotExcelData);
 	//读取数据完成
 	connect(loadExcelThread, &ExcelThread::readExcelFinish2main, this, &SimEqpUI::readExcelFinished);
@@ -91,6 +91,7 @@ SimEqpUI::~SimEqpUI()
 {
 	loadExcel_Qthread->quit();
 	loadExcel_Qthread->wait();
+	delete myQPmac;
 }
 void SimEqpUI::initUi()
 {
@@ -179,19 +180,18 @@ void SimEqpUI::on_MotorSevoOnButton_clicked()
 	qDebug() << "MotorSevoOnButton clicked";
 }
 
-void SimEqpUI::on_HomeButton_clicked()
+void SimEqpUI::on_ForceHomeButton_clicked()
 {
-	qDebug() << "HomeButton clicked";
+	qDebug() << "ForceHomeButton clicked";
 }
 
 void SimEqpUI::on_StartButton_clicked()
 {
 	qDebug() << "StartButton clicked";
-	/*下载Pmac运动程序*/
 	switch (SimEqpGlobal::windSpeed)
 	{
 	case 10: 
-
+		myQPmac->startWinds();
 		break;
 	case 15:
 
@@ -201,39 +201,23 @@ void SimEqpUI::on_StartButton_clicked()
 		break;
 
 	}
-
-	/*开始绘图*/
-	if (!plotTimer->isActive())
-	{
-		plotTimer->start();
-		SimEqpGlobal::startTime = QDateTime::currentDateTime();//获取开始时间
-		qDebug() << "plotTimer->start()";
-		ui.StartButton->setText("正在运动...");
-		ui.StopButton->setText("停止运动");
-	}
-	else
-	{
-		qDebug() << "正在运动！";
-	}
+	ui.StartButton->setText("正在运动...");
+	ui.StopButton->setText("停止运动");
+	ui.plotRealTimeCurve->setChecked(true);
+	ui.ForceHomeButton->setEnabled(false);
+	
 }
 
 void SimEqpUI::on_StopButton_clicked()
 {
 	qDebug() << "StopButton clicked";
 	/*停止Pmac运动*/
-
+	myQPmac->stopWinds();
 	/*停止绘图*/
-	if (plotTimer->isActive())
-	{
-		plotTimer->stop();
-		qDebug() << "plotTimer->stop()";
-		ui.StopButton->setText("已停止");
-		ui.StartButton->setText("开始运动");
-	}
-	else
-	{
-		qDebug() << "未开始运动！";
-	}
+	ui.plotRealTimeCurve->setChecked(false);
+	ui.StartButton->setText("开始运动");
+	ui.StopButton->setText("已停止");
+	ui.ForceHomeButton->setEnabled(true);
 }
 
 void SimEqpUI::on_RelDispJogButton_clicked()
@@ -290,7 +274,6 @@ void SimEqpUI::on_plotRealTimeCurve_toggled(bool checked)
 		{
 			qDebug() << "plotTimer->stop()";
 			plotTimer->stop();
-
 		}
 	}
 
@@ -370,45 +353,68 @@ void SimEqpUI::on_LoadCurveWinds10()
 	*/
 	/*直接加载现有文件*/
 	//QString strFile = "E:/0Study/Graduate 3/CppWorkSpace/SimulationEquipment/bin/10m_sWinds_Disp.xlsx";
-	/*拼接 获取文件绝对路径*/
+	/*拼接 获取文件绝对路径--标准曲线*/
 	QString strFile0 = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/ExperimentData";
 	QString strFileDisp = strFile0 + "/10m_sWinds_Disp.xlsx";
+	QString strFileVel = strFile0 + "/10m_sWinds_Vel.xlsx";
 	QString strFileForce = strFile0 + "/10m_sWinds_Force.xlsx";
 	qDebug() << "读取的文件路径:" << strFileDisp;
 
 	on_LoadDispCurve(strFileDisp);//读取位移
+	on_LoadVelCurve(strFileVel);//读取速度
 	on_LoadForceCurce(strFileForce);//读取力
 
-	ui.LoadDataButton->setText("选择曲线(当前曲线:10m/s风速)");
+	ui.LoadDataButton->setText("选择曲线(10m/s风速)");
 	SimEqpGlobal::windSpeed = 10;
+
+	/*下载力运动程序至PMac*/
+	QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
+	QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
+	myQPmac->downloadFile(strMoveFile);
 }
 
 void SimEqpUI::on_LoadCurveWinds15()
 {
 	QString strFile0 = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/ExperimentData";
 	QString strFileDisp = strFile0 + "/15m_sWinds_Disp.xlsx";
+	QString strFileVel = strFile0 + "/15m_sWinds_Vel.xlsx";
 	QString strFileForce = strFile0 + "/15m_sWinds_Force.xlsx";
 	qDebug() << "读取的文件路径:" << strFileDisp;
 
 	on_LoadDispCurve(strFileDisp);//读取位移
+	on_LoadVelCurve(strFileVel);//读取速度
 	on_LoadForceCurce(strFileForce);//读取力
 
-	ui.LoadDataButton->setText("选择曲线(当前曲线:15m/s风速)");
+	ui.LoadDataButton->setText("选择曲线(15m/s风速)");
 	SimEqpGlobal::windSpeed = 15;
+
+	///*下载力运动程序至PMac*/
+	//QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
+	//QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
+	//myQPmac->downloadFile(strMoveFile);
+
 }
 
 void SimEqpUI::on_LoadCurveWinds20()
 {
 	QString strFile0 = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/ExperimentData";
 	QString strFileDisp = strFile0 + "/20m_sWinds_Disp.xlsx";
+	QString strFileVel = strFile0 + "/20m_sWinds_Vel.xlsx";
 	QString strFileForce = strFile0 + "/20m_sWinds_Force.xlsx";
 	qDebug() << "读取的文件路径:" << strFileDisp;
 
 	on_LoadDispCurve(strFileDisp);//读取位移
+	on_LoadDispCurve(strFileVel);//读取速度
 	on_LoadForceCurce(strFileForce);//读取力
 
-	ui.LoadDataButton->setText("选择曲线(当前曲线:20m/s风速)");
+	ui.LoadDataButton->setText("选择曲线(20m/s风速)");
 	SimEqpGlobal::windSpeed = 20;
+
+	///*下载力运动程序至PMac*/
+	//QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
+	//QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
+	//myQPmac->downloadFile(strMoveFile);
+
 }
 void SimEqpUI::on_LoadDispCurve(QString strFile)
 {
@@ -436,6 +442,33 @@ void SimEqpUI::on_LoadDispCurve(QString strFile)
 	}
 }
 
+void SimEqpUI::on_LoadVelCurve(QString strFile)
+{
+	/*判断文件是否存在，存在则读取*/
+	if (!strFile.isEmpty())
+	{
+		if (QFileInfo(strFile).exists() == false)
+		{
+			qDebug() << "速度曲线 文件不存在！";
+			QMessageBox::information(NULL, "提示", "速度曲线文件不存在！");
+		}
+		else
+		{
+			curves_Vel->x0.clear();
+			curves_Vel->y0.clear();
+			curves_Vel->x_y0.clear();
+			qDebug() << "emit sig_ReadData Vel";
+			emit sig_ReadData(Vel, strFile, &curves_Vel->x_y0);
+			excelProssessDlg->exec();//显示正在读写对话框
+		}
+	}
+	else
+	{
+		qDebug() << "速度曲线 文件名为空";
+	}
+
+}
+
 void SimEqpUI::on_LoadForceCurce(QString strFile)
 {
 	/*判断文件是否存在，存在则读取*/
@@ -444,7 +477,7 @@ void SimEqpUI::on_LoadForceCurce(QString strFile)
 		if (QFileInfo(strFile).exists() == false)
 		{
 			qDebug() << "力曲线 文件不存在！";
-			QMessageBox::information(NULL, "提示", "文件不存在！");
+			QMessageBox::information(NULL, "提示", "力曲线文件不存在！");
 		}
 		else
 		{
@@ -532,6 +565,12 @@ void SimEqpUI::on_plotExcelData(CurveType curve)
 		widget_Disp->graph(0)->setData(curves_Disp->x0, curves_Disp->y0);
 		widget_Disp->replot();
 		qDebug() << "位移0曲线 绘制完成";
+		break;
+	case Vel:
+		LoadExcelData::castListListVariant2VectorAndVector(curves_Vel->x_y0, curves_Vel->x0, curves_Vel->y0);
+		widget_Vel->graph(0)->setData(curves_Vel->x0, curves_Vel->y0);
+		widget_Vel->replot();
+		qDebug() << "速度0曲线 绘制完成";
 		break;
 	case Force:
 		LoadExcelData::castListListVariant2VectorAndVector(curves_Force->x_y0, curves_Force->x0, curves_Force->y0);
@@ -709,28 +748,74 @@ void SimEqpUI::selectionChanged_Vel()
 	qDebug() << "curves_Vel->curIndex = " << curves_Vel->curIndex;
 }
 
+
+
+void SimEqpUI::delay_block(int ms)
+{
+	QTime t = QTime::currentTime().addMSecs(ms);
+	while (QTime::currentTime()<t);//单位ms
+	{
+		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+	}
+}
+
+void SimEqpUI::delay_nonblock(int ms)
+{
+	QTime t = QTime::currentTime();
+	QTime nowT;
+	do 
+	{
+		nowT = QTime::currentTime();
+	} 
+	while (t.msecsTo(nowT) <= ms);
+}
+
+void SimEqpUI::on_SelectControlModeButton_clicked()
+{
+	qDebug() << "SelectControlModeButton is clicked";
+	QMenu * selectControlModeMenu = new QMenu(this);
+	selectControlModeMenu->addAction(ui.CurveMode_Force);
+	selectControlModeMenu->addAction(ui.JogMode_Vel);
+	ui.SelectControlModeButton->setMenu(selectControlModeMenu);
+	selectControlModeMenu->exec(QPoint(QCursor::pos().x(), QCursor::pos().y()));//解决需要点击两次问题
+}
+
 void SimEqpUI::on_CurveMode_Force_triggered()
 {
-	QMessageBox::information(NULL, "提示", 
+	QMessageBox::StandardButton answer = QMessageBox::information(NULL, "提示",
 		"<font size='5'>请确认是否将控制柜的旋钮调至\
 		<font size='6' color='red'><b><p align='center'>\
 		转矩Mode</p></b>\
 		</font>\
-		</font>");
-	ui.CurveControlBox->setEnabled(true);
-	ui.JogControlBox->setEnabled(false);
+		</font>", 
+		QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+	if (answer == QMessageBox::Yes)
+	{
+		ui.CurveControlBox->setEnabled(true);
+		ui.JogControlBox->setEnabled(false);
+		ui.SelectControlModeButton->setText("选择控制模式(力控制)");
+		myQPmac->openForceLoop();//力开环
+
+	}
 }
 
 void SimEqpUI::on_JogMode_Vel_triggered()
 {
-	QMessageBox::information(NULL, "提示",
+	QMessageBox::StandardButton answer = QMessageBox::information(NULL, "提示",
 		"<font size='5'>请确认是否将控制柜的旋钮调至\
 		<font size='6' color='red'><b><p align='center'>\
 		速度Mode</p></b>\
 		</font>\
-		</font>");
-	ui.CurveControlBox->setEnabled(false);
-	ui.JogControlBox->setEnabled(true);
+		</font>",
+		QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+	if (answer == QMessageBox::Yes)
+	{
+		ui.CurveControlBox->setEnabled(false);
+		ui.JogControlBox->setEnabled(true);
+		ui.SelectControlModeButton->setText("选择控制模式(速度控制)");
+
+	}
+
 }
 
 void SimEqpUI::on_ConnectPMACButton_clicked()
@@ -740,7 +825,30 @@ void SimEqpUI::on_ConnectPMACButton_clicked()
 	isConnected = myQPmac->creatPmacSelect();
 	if (isConnected)
 	{
-		getPmacDataTimer->start();
+		ui.InitPmacButton->setEnabled(true);
 	} 
+
+}
+
+void SimEqpUI::on_InitPmacButton_clicked()
+{
+	qDebug() << "InitPmacButton is clicked";
+
+	//初始化
+	bool initState  = myQPmac->initPmac();
+	/*******延时1s*****/
+	delay_nonblock(1000);
+	/***************/
+	//开启力滤波
+	if (initState)
+	{
+		myQPmac->enablePLC(1);
+	}
+
+	getPmacDataTimer->start();
+	ui.SelectControlModeButton->setEnabled(true);
+	ui.MotorSevoOnButton->setEnabled(true);
+
+	ui.InitPmacButton->setText("初始化完成");
 
 }

@@ -1,4 +1,17 @@
 <RCC>
-    <qresource prefix="SimEqpUI">
+    <qresource prefix="/SimEqpUI">
+        <file>icon/arrows_hv_32px.ico</file>
+        <file>icon/caliper_32px.ico</file>
+        <file>icon/draw_paintbrush_32px.ico</file>
+        <file>icon/MD_knob_32px.ico</file>
+        <file>icon/select_32px.ico</file>
+        <file>icon/selection_32px.ico</file>
+        <file>icon/trash_empty_32px.ico</file>
+        <file>icon/art_32px.ico</file>
+        <file>icon/erase_32px.ico</file>
+        <file>icon/selection_16px.ico</file>
+        <file>icon/selection_24px.ico</file>
+        <file>icon/settings_32px.ico</file>
+        <file>icon/settings_48.ico</file>
     </qresource>
 </RCC>

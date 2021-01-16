@@ -10,7 +10,7 @@
 #include "PmacDeviceLib.h"
 #include "SimEqpGlobal.h"
 #include "MyQPmac.h"
-
+#include <QElapsedTimer>
 class SimEqpUI : public QMainWindow
 {
 	Q_OBJECT
@@ -21,6 +21,7 @@ public:
 signals:
 	void sig_ReadData(CurveType curve, QString fileName, QList<QList<QVariant>> *x_y0);
 	void sig_WriteData(CurveType curve, QList<QList<QVariant> > *x_y, QString fileName);
+	void sig_changeInitButton();
 
 public slots:
 
@@ -65,11 +66,13 @@ private:
 	void contextMenuRequestVel(QPoint pos);// 右键图像菜单_Vel
 
 private slots:
+	void on_SelectControlModeButton_clicked(); //选择控制模式
 	void on_CurveMode_Force_triggered();//选择曲线运动模式
 	void on_JogMode_Vel_triggered();//选择点动运动模式
 	void on_ConnectPMACButton_clicked();//连接PMAC
+	void on_InitPmacButton_clicked();//初始化PMAC
 	void on_MotorSevoOnButton_clicked();//电机伺服on
-	void on_HomeButton_clicked();//力回零
+	void on_ForceHomeButton_clicked();//力回零
 	void on_StartButton_clicked();//开始运动 并开始绘图
 	void on_StopButton_clicked();//停止运动
 	void on_RelDispJogButton_clicked();//距离点动
@@ -83,11 +86,12 @@ private slots:
 	void on_getPmacDataTimer();//获取PMac数据定时器溢出
 	void on_updateUiDataTimer();//刷新界面数据定时器溢出
 
-	void on_LoadDataButton_clicked();//导入加载excel数据
-	void on_LoadDispCurve(QString strFile);
+	void on_LoadDataButton_clicked();//导入加载excel数据 下载程序到PMAC
 	void on_LoadCurveWinds10();//10m风速曲线
 	void on_LoadCurveWinds15();
 	void on_LoadCurveWinds20();
+	void on_LoadDispCurve(QString strFile);
+	void on_LoadVelCurve(QString strFile);
 	void on_LoadForceCurce(QString strFile);
 	void readExcelFinished();//excel数据读取完成
 
@@ -108,4 +112,6 @@ private slots:
 	void selectionChanged_Vel();//图例曲线选择
 
 
+	void delay_block(int ms);//阻塞延时程序
+	void delay_nonblock(int ms);//非阻塞延时
 };
