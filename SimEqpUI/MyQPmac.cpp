@@ -83,43 +83,91 @@ double MyQPmac::getMotorForce()
 	return force;
 }
 
-bool MyQPmac::getLimState()
+bool MyQPmac::getPosLimState()
 {
-	return false;
+	bool isTriggered;
+	Pmac0->GetResponse(pDeviceNumber, "M122", pAnswer);//获取正限位状态
+	if (pAnswer.toInt())
+	{
+		isTriggered = true;
+	}
+	else
+	{
+		isTriggered = false;
+	}
+	return isTriggered;
+}
+
+bool MyQPmac::getNegLimState()
+{
+	bool isTriggered;
+	Pmac0->GetResponse(pDeviceNumber, "M122", pAnswer);//获取负限位状态
+	if (pAnswer.toInt())
+	{
+		isTriggered = true;
+	}
+	else
+	{
+		isTriggered = false;
+	}
+	return isTriggered;
 }
 
 bool MyQPmac::getForceHomeState()
 {
-
-	return false;
+	bool isHome = false;
+	Pmac0->GetResponse(pDeviceNumber, "p25", pAnswer);//获取负限位状态
+	if (pAnswer.toInt())
+	{
+		isHome = true;
+	}
+	else
+	{
+		isHome = false;
+	}
+	return isHome;
 }
 
 void MyQPmac::setJogVel(double vel)
 {
 	QString strVel = QString::number(vel/1000*512,'f',4);//速度参数换算
 	QString strCommand = "I122=" + strVel;
-	qDebug() << "setJogVel:" << strCommand;
 	Pmac0->GetResponse(pDeviceNumber, strCommand, pAnswer);
+	qDebug() << "setJogVel:" << strCommand<<":"<< pAnswer;
 }
 
 void MyQPmac::jogDisp(double disp)
 {
 	//换算成脉冲
-	int jog_disp_cts = disp * 512;
-	QString strCts = QString::number(jog_disp_cts);//速度参数换算
+	int jog_disp_cts = disp * 512;//位移转为脉冲
+	QString strCts = QString::number(jog_disp_cts);
 	QString strCommand = "j^" + strCts;
 	Pmac0->GetResponse(pDeviceNumber, strCommand, pAnswer);//获取速度mm/s
+	qDebug() << "jogDisp:" << strCommand << ":" << pAnswer;
+}
+
+void MyQPmac::jogPosContinuously()
+{
+	Pmac0->GetResponse(pDeviceNumber, "j+", pAnswer);//持续正向运动
+	qDebug() << "jogPosContinuously 'j+': " << pAnswer;
 
 }
 
 void MyQPmac::startWinds()
 { 
+	qDebug() << "startWinds";
 	enablePLC(4);//开始运动
 }
 
 void MyQPmac::stopWinds()
 {
 	Pmac0->GetResponse(pDeviceNumber, " p22=1 ", pAnswer);//中途停止运动
+	qDebug() << "stopWinds ' p22=1' :" << pAnswer;
+}
+
+void MyQPmac::forceHome()
+{
+	enablePLC(3);//力回零Plc
 }
 
 void MyQPmac::enablePLC(int plcnum)
@@ -127,7 +175,7 @@ void MyQPmac::enablePLC(int plcnum)
 	QString plcNum = QString::number(plcnum);
 	QString strCommand = "enable plc " + plcNum;
 	Pmac0->GetResponse(pDeviceNumber, strCommand, pAnswer);
-	qDebug() <<" enablePLC "<< plcNum << ":"<<pAnswer;
+	qDebug() << strCommand << ":"<<pAnswer;
 }
 
 bool MyQPmac::downloadFile(QString strFile)
@@ -145,7 +193,14 @@ bool MyQPmac::downloadFile(QString strFile)
 void MyQPmac::openForceLoop()
 {
 	Pmac0->GetResponse(pDeviceNumber, "#1o0", pAnswer);
-	qDebug() << "openForceLoop:" << pAnswer;
+	qDebug() << "openForceLoop '#1o0':" << pAnswer;
+}
+
+void MyQPmac::closeLoop()
+{
+	Pmac0->GetResponse(pDeviceNumber, "#1j/", pAnswer);
+	qDebug() << "closeLoop '#1j/':" << pAnswer;
+
 }
 
 

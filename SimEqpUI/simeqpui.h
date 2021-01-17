@@ -76,9 +76,11 @@ private slots:
 	void on_StartButton_clicked();//开始运动 并开始绘图
 	void on_StopButton_clicked();//停止运动
 	void on_RelDispJogButton_clicked();//距离点动
+	void on_LngPrsJogButton_pressed();//长按点动 按下 
+	void on_LngPrsJogButton_released();//长按点动 松开 
 	void on_ConfirmParaButton_clicked();//点动参数确认
-	void on_JogVelEdit_textChanged();//参数变化触发
-	void on_JogDisEdit_textChanged();//参数变化触发
+	void on_JogVelEdit_textChanged();//速度参数变化触发
+	void on_JogDisEdit_textChanged();//距离参数变化触发
 	void on_plotRealTimeCurve_toggled(bool checked);//绘制实时曲线被选择时触发
 	void on_clearAllCurves_triggered();//清除所有曲线
 

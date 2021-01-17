@@ -14,6 +14,11 @@ public:
 	static double jog_vel;//mm/s
 	static double jog_disp;//mm
 
+	/*限位状态*/
+	static bool posLimState;//正 触发为true
+	static bool negLimState;//负
+	/*力回零状态*/
+	static bool forceHomeState; //回零完成为true
 
 	/*当前选择曲线的风速*/
 	static int windSpeed;//m/s

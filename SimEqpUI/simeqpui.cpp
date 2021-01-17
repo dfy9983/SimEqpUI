@@ -183,6 +183,10 @@ void SimEqpUI::on_MotorSevoOnButton_clicked()
 void SimEqpUI::on_ForceHomeButton_clicked()
 {
 	qDebug() << "ForceHomeButton clicked";
+	myQPmac->forceHome();
+	ui.ForceHomeButton->setText("正在力回零...");
+	ui.StopButton->setText("停止运动");
+
 }
 
 void SimEqpUI::on_StartButton_clicked()
@@ -210,19 +214,33 @@ void SimEqpUI::on_StartButton_clicked()
 
 void SimEqpUI::on_StopButton_clicked()
 {
-	qDebug() << "StopButton clicked";
+	qDebug() << "StopButton is clicked";
 	/*停止Pmac运动*/
 	myQPmac->stopWinds();
 	/*停止绘图*/
 	ui.plotRealTimeCurve->setChecked(false);
 	ui.StartButton->setText("开始运动");
+	ui.ForceHomeButton->setText("力回零");
 	ui.StopButton->setText("已停止");
 	ui.ForceHomeButton->setEnabled(true);
 }
 
 void SimEqpUI::on_RelDispJogButton_clicked()
 {
+	qDebug() << "RelDispJogButton is clicked";
 	myQPmac->jogDisp(SimEqpGlobal::jog_disp);
+}
+
+void SimEqpUI::on_LngPrsJogButton_pressed()
+{
+	qDebug() << "onLngPrsJogButton is pressed";
+	myQPmac->jogPosContinuously();
+}
+
+void SimEqpUI::on_LngPrsJogButton_released()
+{
+	qDebug() << "onLngPrsJogButton is released";
+	myQPmac->closeLoop();
 }
 
 void SimEqpUI::on_ConfirmParaButton_clicked()
@@ -314,6 +332,9 @@ void SimEqpUI::on_getPmacDataTimer()
 	SimEqpGlobal::rt_disp = myQPmac->getMotorDisp();
 	SimEqpGlobal::rt_vel = myQPmac->getMotorVel();
 	SimEqpGlobal::rt_force = myQPmac->getMotorForce();
+	SimEqpGlobal::posLimState = myQPmac->getPosLimState();
+	SimEqpGlobal::negLimState = myQPmac->getNegLimState();
+	SimEqpGlobal::forceHomeState = myQPmac->getForceHomeState();
 }
 
 void SimEqpUI::on_updateUiDataTimer()
@@ -328,6 +349,37 @@ void SimEqpUI::on_updateUiDataTimer()
 
 	SimEqpGlobal::jog_vel = ui.JogVelEdit->text().toDouble();
 	SimEqpGlobal::jog_disp = ui.JogDisEdit->text().toDouble();
+
+	if (!SimEqpGlobal::posLimState)
+	{
+		ui.PosLimitState->setStyleSheet("QLabel{background-color:rgb(229, 255, 238);}");
+		ui.PosLimitState->setText("正限位-未触发");
+	}
+	else
+	{
+		ui.PosLimitState->setStyleSheet("QLabel{background-color:rgb(255, 161, 161);}");
+		ui.PosLimitState->setText("正限位-已触发");
+	}
+	if (!SimEqpGlobal::negLimState)
+	{
+		ui.NegLimitState->setStyleSheet("QLabel{background-color:rgb(229, 255, 238);}");
+		ui.NegLimitState->setText("正限位-未触发");
+	}
+	else
+	{
+		ui.NegLimitState->setStyleSheet("QLabel{background-color:rgb(255, 161, 161);}");
+		ui.NegLimitState->setText("正限位-已触发");
+	}
+	if (!SimEqpGlobal::forceHomeState)
+	{
+		ui.StartButton->setEnabled(false);
+	}
+	else
+	{
+		ui.StartButton->setEnabled(true);
+		ui.ForceHomeButton->setText("回零完成");
+
+	}
 	
 }
 
@@ -501,9 +553,9 @@ void SimEqpUI::on_RecordDataButton_clicked()
 	/*写入曲线选择菜单*/
 	QMenu *selectRecordCurveMenu = new QMenu(this);
 	selectRecordCurveMenu->setStyleSheet("font:11pt;font-family:Microsoft YaHei");//设置菜单字体
-	selectRecordCurveMenu->addAction("记录接收位移曲线1", this, &SimEqpUI::on_RecordDispCurve);
-	selectRecordCurveMenu->addAction("记录接收速度曲线1", this, &SimEqpUI::on_RecordVelCurce);
-	selectRecordCurveMenu->addAction("记录接收力曲线1", this, &SimEqpUI::on_RecordForceCurce);
+	selectRecordCurveMenu->addAction("记录接收位移曲线", this, &SimEqpUI::on_RecordDispCurve);
+	selectRecordCurveMenu->addAction("记录接收速度曲线", this, &SimEqpUI::on_RecordVelCurce);
+	selectRecordCurveMenu->addAction("记录接收力曲线", this, &SimEqpUI::on_RecordForceCurce);
 
 	ui.RecordDataButton->setMenu(selectRecordCurveMenu);
 	selectRecordCurveMenu->exec(QPoint(QCursor::pos().x(), QCursor::pos().y()));//解决需要点击两次问题
@@ -833,22 +885,26 @@ void SimEqpUI::on_ConnectPMACButton_clicked()
 void SimEqpUI::on_InitPmacButton_clicked()
 {
 	qDebug() << "InitPmacButton is clicked";
-
+	ui.InitPmacButton->setText("正在初始化...");
 	//初始化
 	bool initState  = myQPmac->initPmac();
-	/*******延时1s*****/
-	delay_nonblock(1000);
-	/***************/
-	//开启力滤波
-	if (initState)
+	QTimer::singleShot(1000, this, [=] 
 	{
-		myQPmac->enablePLC(1);
-	}
+		qDebug() << "1s later:";
+		//开启力滤波
+		if (initState)
+		{
+			myQPmac->enablePLC(1);
+		}
+		getPmacDataTimer->start();
+		ui.SelectControlModeButton->setEnabled(true);
+		ui.MotorSevoOnButton->setEnabled(true);
 
-	getPmacDataTimer->start();
-	ui.SelectControlModeButton->setEnabled(true);
-	ui.MotorSevoOnButton->setEnabled(true);
+		ui.InitPmacButton->setText("初始化完成");;
+	});
 
-	ui.InitPmacButton->setText("初始化完成");
+
+
+
 
 }

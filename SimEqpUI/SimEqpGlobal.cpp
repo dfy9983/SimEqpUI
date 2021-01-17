@@ -12,3 +12,7 @@ double SimEqpGlobal::jog_vel = 0;
 double SimEqpGlobal::jog_disp = 0;
 
 int SimEqpGlobal::windSpeed = 0;
+
+bool SimEqpGlobal::posLimState = false;
+bool SimEqpGlobal::negLimState = false;
+bool SimEqpGlobal::forceHomeState = false;
