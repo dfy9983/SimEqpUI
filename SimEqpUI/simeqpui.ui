@@ -158,6 +158,20 @@
      <string>点动控制-速度控制模式</string>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>mm/s</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>mm</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1" colspan="2">
       <widget class="QLineEdit" name="JogVelEdit">
        <property name="text">
@@ -165,10 +179,10 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
-      <widget class="QLabel" name="label_3">
+     <item row="3" column="0" colspan="2">
+      <widget class="QPushButton" name="ConfirmParaButton">
        <property name="text">
-        <string>mm/s</string>
+        <string>确认参数</string>
        </property>
       </widget>
      </item>
@@ -179,7 +193,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0" colspan="2">
+     <item row="7" column="0" colspan="2">
       <widget class="QPushButton" name="RelDispJogButton">
        <property name="enabled">
         <bool>false</bool>
@@ -199,13 +213,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>mm</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="1" colspan="2">
       <widget class="QLineEdit" name="JogDisEdit">
        <property name="text">
@@ -213,20 +220,23 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="2" colspan="2">
-      <widget class="QPushButton" name="LngPrsJogButton">
+     <item row="3" column="2" colspan="2">
+      <widget class="QPushButton" name="LngPrsJogPosButton">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>长按点动</string>
+        <string>长按点动-正方向</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QPushButton" name="ConfirmParaButton">
+     <item row="7" column="2" colspan="2">
+      <widget class="QPushButton" name="LngPrsJogNegButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
-        <string>确认参数</string>
+        <string>长按点动-负方向</string>
        </property>
       </widget>
      </item>
@@ -238,7 +248,7 @@
       <x>10</x>
       <y>440</y>
       <width>400</width>
-      <height>271</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="minimumSize">
@@ -260,23 +270,6 @@
      <string>数据与状态显示</string>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="1" column="2">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>mm</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="VelShowEdit">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="VelShowLabel">
        <property name="text">
@@ -284,18 +277,8 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="ForceShowEdit">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="DispShowEdit">
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="VelShowEdit">
        <property name="text">
         <string/>
        </property>
@@ -311,23 +294,44 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="PosLimitState">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(255, 161, 161);</string>
-       </property>
+     <item row="1" column="0">
+      <widget class="QLabel" name="DispShowLabel">
        <property name="text">
-        <string>正限位-未触发</string>
+        <string>实时位移</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="NegLimitState">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(229, 255, 238);</string>
-       </property>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="DispShowEdit">
        <property name="text">
-        <string>负限位-未触发</string>
+        <string/>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>mm</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="ForceShowLabel">
+       <property name="text">
+        <string>实时力</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="ForceShowEdit">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -338,17 +342,33 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="DispShowLabel">
+     <item row="3" column="0">
+      <widget class="QLabel" name="PosLimitState">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(229, 255, 238);</string>
+       </property>
        <property name="text">
-        <string>实时位移</string>
+        <string>正限位-未触发</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="ForceShowLabel">
+     <item row="3" column="1">
+      <widget class="QLabel" name="NegLimitState">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(229, 255, 238);</string>
+       </property>
        <property name="text">
-        <string>实时力</string>
+        <string>负限位-未触发</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="MoveStateLabel">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(229, 255, 238);</string>
+       </property>
+       <property name="text">
+        <string>运动状态-已停止</string>
        </property>
       </widget>
      </item>
@@ -385,22 +405,18 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="MotorSevoOnButton">
+     <item row="2" column="0" colspan="2">
+      <widget class="QPushButton" name="SelectControlModeButton">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>36</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
        </property>
        <property name="text">
-        <string>电机伺服ON</string>
+        <string>选择控制模式</string>
        </property>
       </widget>
      </item>
@@ -417,21 +433,6 @@
        </property>
        <property name="text">
         <string>连接PMAC</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QPushButton" name="SelectControlModeButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>选择控制模式</string>
        </property>
       </widget>
      </item>

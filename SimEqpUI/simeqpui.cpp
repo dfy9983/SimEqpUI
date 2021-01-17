@@ -97,6 +97,13 @@ void SimEqpUI::initUi()
 {
 	/*exceld读写对话框*/
 	excelProssessDlg = new LoadExcelDlg(this);
+	//设置lineedit输入限制
+	QRegExp velRange("^-?(30|[1-2]?\\d(\\.\\d{1,2})?)$");//-30~+30 两位小数
+	QRegExpValidator *pRegVel = new QRegExpValidator(velRange, this);
+	QRegExp dispRange("^-?(250|[1-2]?[0-4]?\\d(\\.\\d{1,2})?)$");//-250~+250 两位小数
+	QRegExpValidator *pRegDisp = new QRegExpValidator(dispRange, this);
+	ui.JogVelEdit->setValidator(pRegVel);
+	ui.JogDisEdit->setValidator(pRegDisp);
 
 	/*位移曲线窗口初始化*/
 	widget_Disp = ui.widget_Disp;
@@ -175,10 +182,10 @@ void SimEqpUI::contextMenuRequestVel(QPoint pos)
 	menu->addAction("清除选中曲线", curves_Vel, &CurvePlot::clearCurve);
 }
 
-void SimEqpUI::on_MotorSevoOnButton_clicked()
-{
-	qDebug() << "MotorSevoOnButton clicked";
-}
+//void SimEqpUI::on_MotorSevoOnButton_clicked()
+//{
+//	qDebug() << "MotorSevoOnButton clicked";
+//}
 
 void SimEqpUI::on_ForceHomeButton_clicked()
 {
@@ -192,19 +199,9 @@ void SimEqpUI::on_ForceHomeButton_clicked()
 void SimEqpUI::on_StartButton_clicked()
 {
 	qDebug() << "StartButton clicked";
-	switch (SimEqpGlobal::windSpeed)
-	{
-	case 10: 
-		myQPmac->startWinds();
-		break;
-	case 15:
+	//开始运动
+	myQPmac->startWinds();
 
-		break;
-	case 20:
-
-		break;
-
-	}
 	ui.StartButton->setText("正在运动...");
 	ui.StopButton->setText("停止运动");
 	ui.plotRealTimeCurve->setChecked(true);
@@ -216,9 +213,10 @@ void SimEqpUI::on_StopButton_clicked()
 {
 	qDebug() << "StopButton is clicked";
 	/*停止Pmac运动*/
-	myQPmac->stopWinds();
+	myQPmac->stopMove();
 	/*停止绘图*/
 	ui.plotRealTimeCurve->setChecked(false);
+
 	ui.StartButton->setText("开始运动");
 	ui.ForceHomeButton->setText("力回零");
 	ui.StopButton->setText("已停止");
@@ -231,15 +229,27 @@ void SimEqpUI::on_RelDispJogButton_clicked()
 	myQPmac->jogDisp(SimEqpGlobal::jog_disp);
 }
 
-void SimEqpUI::on_LngPrsJogButton_pressed()
+void SimEqpUI::on_LngPrsJogPosButton_pressed()
 {
-	qDebug() << "onLngPrsJogButton is pressed";
+	qDebug() << "Jog+ is pressed";
 	myQPmac->jogPosContinuously();
 }
 
-void SimEqpUI::on_LngPrsJogButton_released()
+void SimEqpUI::on_LngPrsJogPosButton_released()
 {
-	qDebug() << "onLngPrsJogButton is released";
+	qDebug() << "jog+ is released";
+	myQPmac->closeLoop();
+}
+
+void SimEqpUI::on_LngPrsJogNegButton_pressed()
+{
+	qDebug() << "Jog- is pressed";
+	myQPmac->jogNegContinuously();
+}
+
+void SimEqpUI::on_LngPrsJogNegButton_released()
+{
+	qDebug() << "jog- is released";
 	myQPmac->closeLoop();
 }
 
@@ -247,21 +257,24 @@ void SimEqpUI::on_ConfirmParaButton_clicked()
 {
 	myQPmac->setJogVel(SimEqpGlobal::jog_vel);
 	ui.RelDispJogButton->setEnabled(true);
-	ui.LngPrsJogButton->setEnabled(true);
+	ui.LngPrsJogPosButton->setEnabled(true);
+	ui.LngPrsJogNegButton->setEnabled(true);
 }
 
 void SimEqpUI::on_JogVelEdit_textChanged()
 {
 	qDebug() << "JogVelEdit_textChanged";
 	ui.RelDispJogButton->setEnabled(false);
-	ui.LngPrsJogButton->setEnabled(false);
+	ui.LngPrsJogPosButton->setEnabled(false);
+	ui.LngPrsJogNegButton->setEnabled(false);
 }
 
 void SimEqpUI::on_JogDisEdit_textChanged()
 {
 	qDebug() << "JogDisEdit_textChanged";
 	ui.RelDispJogButton->setEnabled(false);
-	ui.LngPrsJogButton->setEnabled(false);
+	ui.LngPrsJogPosButton->setEnabled(false);
+	ui.LngPrsJogNegButton->setEnabled(false);
 }
 
 void SimEqpUI::on_plotRealTimeCurve_toggled(bool checked)
@@ -335,6 +348,7 @@ void SimEqpUI::on_getPmacDataTimer()
 	SimEqpGlobal::posLimState = myQPmac->getPosLimState();
 	SimEqpGlobal::negLimState = myQPmac->getNegLimState();
 	SimEqpGlobal::forceHomeState = myQPmac->getForceHomeState();
+	SimEqpGlobal::isMoving = myQPmac->getMoveState();
 }
 
 void SimEqpUI::on_updateUiDataTimer()
@@ -370,15 +384,40 @@ void SimEqpUI::on_updateUiDataTimer()
 		ui.NegLimitState->setStyleSheet("QLabel{background-color:rgb(255, 161, 161);}");
 		ui.NegLimitState->setText("正限位-已触发");
 	}
+
 	if (!SimEqpGlobal::forceHomeState)
 	{
 		ui.StartButton->setEnabled(false);
+		ui.ForceHomeButton->setText("力回零");
 	}
 	else
 	{
 		ui.StartButton->setEnabled(true);
 		ui.ForceHomeButton->setText("回零完成");
 
+	}
+
+	if (!SimEqpGlobal::isMoving)
+	{
+		ui.MoveStateLabel->setStyleSheet("QLabel{background-color:rgb(229, 255, 238);}");
+		if (ui.MoveStateLabel->text() == "运动状态-正在运动...")
+		{
+			ui.StopButton->setText("已停止");
+			ui.StartButton->setText("开始运动");
+			ui.plotRealTimeCurve->setChecked(false);//停止绘图
+		}
+		ui.MoveStateLabel->setText("运动状态-已停止");
+	}
+	else
+	{
+		ui.MoveStateLabel->setStyleSheet("QLabel{background-color:rgb(255, 225, 148);}");
+		if (ui.MoveStateLabel->text() == "运动状态-已停止")
+		{
+			ui.StartButton->setText("正在运动...");
+			ui.StopButton->setText("停止");
+			
+		}
+		ui.MoveStateLabel->setText("运动状态-正在运动...");
 	}
 	
 }
@@ -421,7 +460,7 @@ void SimEqpUI::on_LoadCurveWinds10()
 
 	/*下载力运动程序至PMac*/
 	QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
-	QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
+	QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05.pmc";
 	myQPmac->downloadFile(strMoveFile);
 }
 
@@ -440,10 +479,10 @@ void SimEqpUI::on_LoadCurveWinds15()
 	ui.LoadDataButton->setText("选择曲线(15m/s风速)");
 	SimEqpGlobal::windSpeed = 15;
 
-	///*下载力运动程序至PMac*/
-	//QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
-	//QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
-	//myQPmac->downloadFile(strMoveFile);
+	/*下载力运动程序至PMac*/
+	QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
+	QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms15_05.pmc";
+	myQPmac->downloadFile(strMoveFile);
 
 }
 
@@ -456,16 +495,16 @@ void SimEqpUI::on_LoadCurveWinds20()
 	qDebug() << "读取的文件路径:" << strFileDisp;
 
 	on_LoadDispCurve(strFileDisp);//读取位移
-	on_LoadDispCurve(strFileVel);//读取速度
+	on_LoadVelCurve(strFileVel);//读取速度
 	on_LoadForceCurce(strFileForce);//读取力
 
 	ui.LoadDataButton->setText("选择曲线(20m/s风速)");
 	SimEqpGlobal::windSpeed = 20;
 
-	///*下载力运动程序至PMac*/
-	//QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
-	//QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms10_05_new.pmc";
-	//myQPmac->downloadFile(strMoveFile);
+	/*下载力运动程序至PMac*/
+	QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
+	QString strMoveFile = strFile_PmacProg + "/8_F_PLC_ms20_05.pmc";
+	myQPmac->downloadFile(strMoveFile);
 
 }
 void SimEqpUI::on_LoadDispCurve(QString strFile)
@@ -825,6 +864,7 @@ void SimEqpUI::delay_nonblock(int ms)
 void SimEqpUI::on_SelectControlModeButton_clicked()
 {
 	qDebug() << "SelectControlModeButton is clicked";
+
 	QMenu * selectControlModeMenu = new QMenu(this);
 	selectControlModeMenu->addAction(ui.CurveMode_Force);
 	selectControlModeMenu->addAction(ui.JogMode_Vel);
@@ -834,6 +874,9 @@ void SimEqpUI::on_SelectControlModeButton_clicked()
 
 void SimEqpUI::on_CurveMode_Force_triggered()
 {
+	//切换控制模式时候 重置力回零标志位
+	myQPmac->setforceHomeState(false);
+
 	QMessageBox::StandardButton answer = QMessageBox::information(NULL, "提示",
 		"<font size='5'>请确认是否将控制柜的旋钮调至\
 		<font size='6' color='red'><b><p align='center'>\
@@ -847,12 +890,14 @@ void SimEqpUI::on_CurveMode_Force_triggered()
 		ui.JogControlBox->setEnabled(false);
 		ui.SelectControlModeButton->setText("选择控制模式(力控制)");
 		myQPmac->openForceLoop();//力开环
-
 	}
 }
 
 void SimEqpUI::on_JogMode_Vel_triggered()
 {
+	//切换控制模式时候 重置力回零标志位
+	myQPmac->setforceHomeState(false);
+
 	QMessageBox::StandardButton answer = QMessageBox::information(NULL, "提示",
 		"<font size='5'>请确认是否将控制柜的旋钮调至\
 		<font size='6' color='red'><b><p align='center'>\
@@ -865,7 +910,7 @@ void SimEqpUI::on_JogMode_Vel_triggered()
 		ui.CurveControlBox->setEnabled(false);
 		ui.JogControlBox->setEnabled(true);
 		ui.SelectControlModeButton->setText("选择控制模式(速度控制)");
-
+		myQPmac->closeLoop();
 	}
 
 }
@@ -885,6 +930,9 @@ void SimEqpUI::on_ConnectPMACButton_clicked()
 void SimEqpUI::on_InitPmacButton_clicked()
 {
 	qDebug() << "InitPmacButton is clicked";
+	ui.SelectControlModeButton->setText("选择控制模式");
+	ui.CurveControlBox->setEnabled(false);
+	ui.JogControlBox->setEnabled(false);
 	ui.InitPmacButton->setText("正在初始化...");
 	//初始化
 	bool initState  = myQPmac->initPmac();
@@ -898,7 +946,6 @@ void SimEqpUI::on_InitPmacButton_clicked()
 		}
 		getPmacDataTimer->start();
 		ui.SelectControlModeButton->setEnabled(true);
-		ui.MotorSevoOnButton->setEnabled(true);
 
 		ui.InitPmacButton->setText("初始化完成");;
 	});

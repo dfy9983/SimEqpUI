@@ -33,13 +33,13 @@ bool MyQPmac::creatPmacSelect()
 	if (pbSuccess_open)
 	{
 		qDebug() << "open success";
-		QMessageBox::information(NULL, "提示", "连接成功");
+		QMessageBox::information(NULL, "提示", "连接成功,请初始化Pmac！");
 		return  true;
 	}
 	else
 	{
 		qDebug() << "open failed";
-		QMessageBox::information(NULL, "提示", "连接失败，检查是否以管理员身份运行");
+		QMessageBox::information(NULL, "提示", "连接失败，检查是否以管理员身份运行！");
 		return false;
 	}
 }
@@ -49,12 +49,8 @@ bool MyQPmac::initPmac()
 
 	QString strFile_PmacProg = QDir(QFileInfo(QDir::currentPath()).canonicalPath()).absoluteFilePath("doc") + "/PmacProg";
 	QString strInitFile = strFile_PmacProg + "/0_initializer.pmc";
-	QString strServoFile = strFile_PmacProg + "/9_ServoPLC0_new.pmc";
-
 	bool downloadState_init = downloadFile(strInitFile);//下载初始化程序
 	qDebug() << "downloadState_init:" << strInitFile << "state: " << downloadState_init;
-
-
 	return  downloadState_init;
 }
 
@@ -86,7 +82,7 @@ double MyQPmac::getMotorForce()
 bool MyQPmac::getPosLimState()
 {
 	bool isTriggered;
-	Pmac0->GetResponse(pDeviceNumber, "M122", pAnswer);//获取正限位状态
+	Pmac0->GetResponse(pDeviceNumber, "M131", pAnswer);//获取正限位状态
 	if (pAnswer.toInt())
 	{
 		isTriggered = true;
@@ -101,7 +97,7 @@ bool MyQPmac::getPosLimState()
 bool MyQPmac::getNegLimState()
 {
 	bool isTriggered;
-	Pmac0->GetResponse(pDeviceNumber, "M122", pAnswer);//获取负限位状态
+	Pmac0->GetResponse(pDeviceNumber, "M132", pAnswer);//获取负限位状态
 	if (pAnswer.toInt())
 	{
 		isTriggered = true;
@@ -116,7 +112,7 @@ bool MyQPmac::getNegLimState()
 bool MyQPmac::getForceHomeState()
 {
 	bool isHome = false;
-	Pmac0->GetResponse(pDeviceNumber, "p25", pAnswer);//获取负限位状态
+	Pmac0->GetResponse(pDeviceNumber, "p25", pAnswer);//获取力回零状态
 	if (pAnswer.toInt())
 	{
 		isHome = true;
@@ -126,6 +122,21 @@ bool MyQPmac::getForceHomeState()
 		isHome = false;
 	}
 	return isHome;
+}
+
+bool MyQPmac::getMoveState()
+{
+	bool isMoving = false;
+	Pmac0->GetResponse(pDeviceNumber, "p26", pAnswer);//获取运动状态
+	if (pAnswer.toInt())
+	{
+		isMoving = true;
+	}
+	else
+	{
+		isMoving = false;
+	}
+	return isMoving;
 }
 
 void MyQPmac::setJogVel(double vel)
@@ -153,21 +164,44 @@ void MyQPmac::jogPosContinuously()
 
 }
 
+void MyQPmac::jogNegContinuously()
+{
+	Pmac0->GetResponse(pDeviceNumber, "j-", pAnswer);//持续负向运动
+	qDebug() << "jogPosContinuously 'j-': " << pAnswer;
+
+}
+
 void MyQPmac::startWinds()
 { 
 	qDebug() << "startWinds";
 	enablePLC(4);//开始运动
 }
 
-void MyQPmac::stopWinds()
+void MyQPmac::stopMove()
 {
-	Pmac0->GetResponse(pDeviceNumber, " p22=1 ", pAnswer);//中途停止运动
-	qDebug() << "stopWinds ' p22=1' :" << pAnswer;
+	enablePLC(5);//中途停止运动
+	qDebug() << "stopMove" ;
 }
 
 void MyQPmac::forceHome()
 {
 	enablePLC(3);//力回零Plc
+}
+
+void MyQPmac::setforceHomeState(bool isHome)
+{
+	QString strishome;
+	if (isHome)
+	{
+		strishome = "1";
+	}
+	else
+	{
+		strishome = "0";
+	}
+	QString strCommand = "p25=" + strishome;
+	Pmac0->GetResponse(pDeviceNumber, strCommand, pAnswer);
+	qDebug() << "setforceHomeState:" << strishome;
 }
 
 void MyQPmac::enablePLC(int plcnum)

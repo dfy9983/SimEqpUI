@@ -26,19 +26,21 @@ public:
 	double getMotorDisp();//获取电机位移
 	double getMotorVel();
 	double getMotorForce();
-	bool getPosLimState();//获取正限位状态
+	bool getPosLimState();//获取正限位状态 true为触发
 	bool getNegLimState();//获取负限位状态
-	bool getForceHomeState();//获取力回零状态
+	bool getForceHomeState();//获取力回零状态 true为完成回零
+	bool getMoveState();//获取电机停止状态 ture为正在运动
 
 	void setJogVel(double vel);//设置点动速度
 
 	void jogDisp(double disp);//距离点动
 	void jogPosContinuously();//持续+运动
+	void jogNegContinuously();//持续-运动
 
 	void startWinds();//开始运动力曲线
-	void stopWinds();//中途停止停止力曲线
+	void stopMove();//中途停止 包括回零和力曲线
 	void forceHome();//力回零
-
+	void setforceHomeState(bool isHome);//设置力回零标志位
 	
 
 private:

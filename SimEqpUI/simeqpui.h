@@ -71,13 +71,15 @@ private slots:
 	void on_JogMode_Vel_triggered();//选择点动运动模式
 	void on_ConnectPMACButton_clicked();//连接PMAC
 	void on_InitPmacButton_clicked();//初始化PMAC
-	void on_MotorSevoOnButton_clicked();//电机伺服on
+	//void on_MotorSevoOnButton_clicked();//电机伺服on
 	void on_ForceHomeButton_clicked();//力回零
 	void on_StartButton_clicked();//开始运动 并开始绘图
 	void on_StopButton_clicked();//停止运动
 	void on_RelDispJogButton_clicked();//距离点动
-	void on_LngPrsJogButton_pressed();//长按点动 按下 
-	void on_LngPrsJogButton_released();//长按点动 松开 
+	void on_LngPrsJogPosButton_pressed();//正向 长按点动 按下 
+	void on_LngPrsJogPosButton_released();//正向 长按点动 松开 
+	void on_LngPrsJogNegButton_pressed();//负向 长按点动 按下 
+	void on_LngPrsJogNegButton_released();//负向 长按点动 松开 
 	void on_ConfirmParaButton_clicked();//点动参数确认
 	void on_JogVelEdit_textChanged();//速度参数变化触发
 	void on_JogDisEdit_textChanged();//距离参数变化触发

@@ -17,8 +17,12 @@ public:
 	/*限位状态*/
 	static bool posLimState;//正 触发为true
 	static bool negLimState;//负
+
 	/*力回零状态*/
 	static bool forceHomeState; //回零完成为true
+
+	/*运动停止状态*/
+	static bool isMoving;
 
 	/*当前选择曲线的风速*/
 	static int windSpeed;//m/s
