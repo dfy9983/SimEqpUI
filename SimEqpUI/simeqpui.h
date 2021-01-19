@@ -76,6 +76,7 @@ private slots:
 	void on_StartButton_clicked();//开始运动 并开始绘图
 	void on_StopButton_clicked();//停止运动
 	void on_RelDispJogButton_clicked();//距离点动
+	void on_JogStopButton_clicked();//点动停止
 	void on_LngPrsJogPosButton_pressed();//正向 长按点动 按下 
 	void on_LngPrsJogPosButton_released();//正向 长按点动 松开 
 	void on_LngPrsJogNegButton_pressed();//负向 长按点动 按下 
@@ -84,7 +85,7 @@ private slots:
 	void on_JogVelEdit_textChanged();//速度参数变化触发
 	void on_JogDisEdit_textChanged();//距离参数变化触发
 	void on_plotRealTimeCurve_toggled(bool checked);//绘制实时曲线被选择时触发
-	void on_clearAllCurves_triggered();//清除所有曲线
+	void on_clearAllCurves_triggered();//清除所有接收曲线
 
 	void on_plotTimerTimeOut();//实时绘制定时器溢出
 	void on_getPmacDataTimer();//获取PMac数据定时器溢出

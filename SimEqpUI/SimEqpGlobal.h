@@ -20,6 +20,7 @@ public:
 
 	/*力回零状态*/
 	static bool forceHomeState; //回零完成为true
+	static bool isHoming;//正在回零为true
 
 	/*运动停止状态*/
 	static bool isMoving;

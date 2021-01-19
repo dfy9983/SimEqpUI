@@ -26,7 +26,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>SimEqpUI</string>
+   <string>模拟工装控制软件</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -96,6 +96,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QPushButton" name="StartButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
@@ -136,7 +139,7 @@
       <x>10</x>
       <y>220</y>
       <width>400</width>
-      <height>220</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="minimumSize">
@@ -158,10 +161,44 @@
      <string>点动控制-速度控制模式</string>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="0">
+      <widget class="QLabel" name="JogDispLabel">
+       <property name="text">
+        <string>点动距离</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="JogVelLabel">
+       <property name="text">
+        <string>点动速度</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2" colspan="2">
+      <widget class="QPushButton" name="LngPrsJogNegButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>长按点动-负方向</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="3">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>mm/s</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" colspan="2">
+      <widget class="QPushButton" name="LngPrsJogPosButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>长按点动-正方向</string>
        </property>
       </widget>
      </item>
@@ -172,13 +209,6 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QLineEdit" name="JogVelEdit">
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0" colspan="2">
       <widget class="QPushButton" name="ConfirmParaButton">
        <property name="text">
@@ -186,10 +216,17 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="JogDispLabel">
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="JogDisEdit">
        <property name="text">
-        <string>点动距离</string>
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="JogVelEdit">
+       <property name="text">
+        <string>0</string>
        </property>
       </widget>
      </item>
@@ -206,37 +243,10 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="JogVelLabel">
+     <item row="8" column="0" colspan="2">
+      <widget class="QPushButton" name="JogStopButton">
        <property name="text">
-        <string>点动速度</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="2">
-      <widget class="QLineEdit" name="JogDisEdit">
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2" colspan="2">
-      <widget class="QPushButton" name="LngPrsJogPosButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>长按点动-正方向</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2" colspan="2">
-      <widget class="QPushButton" name="LngPrsJogNegButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>长按点动-负方向</string>
+        <string>停止</string>
        </property>
       </widget>
      </item>
@@ -246,7 +256,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>440</y>
+      <y>480</y>
       <width>400</width>
       <height>251</height>
      </rect>
@@ -387,7 +397,7 @@
      <item row="0" column="1">
       <widget class="QPushButton" name="InitPmacButton">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="minimumSize">
         <size>
@@ -822,7 +832,7 @@
      <normaloff>:/SimEqpUI/icon/erase_32px.ico</normaloff>:/SimEqpUI/icon/erase_32px.ico</iconset>
    </property>
    <property name="text">
-    <string>清除所有曲线</string>
+    <string>清除所有接收曲线</string>
    </property>
   </action>
  </widget>

@@ -237,10 +237,10 @@ void CurvePlot::clearCurve()
 
 void CurvePlot::clearAllCurves()
 {
-	this->x0.clear();
-	this->y0.clear();
-	this->x_y0.clear();
-	myPlot->graph(0)->setData(this->x0, this->y0);
+	//this->x0.clear();
+	//this->y0.clear();
+	//this->x_y0.clear();
+	//myPlot->graph(0)->setData(this->x0, this->y0);
 	this->x1.clear();
 	this->y1.clear();
 	this->x_y1.clear();
