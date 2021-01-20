@@ -97,7 +97,7 @@ void SimEqpUI::initUi()
 {
 	/*exceld读写对话框*/
 	excelProssessDlg = new LoadExcelDlg(this);
-	//设置lineedit输入限制
+	//设置lineedit输入限制 正则表达式
 	QRegExp velRange("^(30|[1-2]?\\d(\\.\\d{1,2})?)$");//0~30 两位小数
 	QRegExpValidator *pRegVel = new QRegExpValidator(velRange, this);
 	QRegExp dispRange("^-?(150|(1?[0-4]?\\d|[1-9]?\\d)(\\.\\d{1,2})?)$");//-150~+150 两位小数
